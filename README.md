@@ -1,74 +1,71 @@
-# [Your site's title]
-
-## Start here (delete this section before you submit)
-
-This repository is your starting point for the Campus Comps case. It already holds the dataset, its description sheet, project instructions for your AI coding agent, and outlines of the README and agent log that the case asks for.
-
-1. **Turn on GitHub Pages.** In this repository, open **Settings**, then **Pages**. Under "Build and deployment," set **Source** to **GitHub Actions**. GitHub may suggest workflows to add. Skip them: this repository already has one, `.github/workflows/pages.yml`.
-2. **Publish for the first time.** Open the **Actions** tab, choose **Publish site to GitHub Pages** in the sidebar, click **Run workflow**, then click **Run workflow** again to confirm. If the tab already shows a failed run from when you created the repository, that's expected: Pages wasn't turned on yet. When the new run shows a green check, your site is at `https://your-username.github.io/your-repo-name/`. It shows a placeholder page until you replace `index.html`.
-
-    From then on, every push to the main branch publishes the site within a few minutes. If the live site doesn't show a change, open the **Actions** tab. A red X means the publish failed, and the run's log says why.
-3. **Open the repository in your AI coding agent.** Its project instructions are in `AGENTS.md`. If your agent reads its instructions from a file with a different name, check its documentation and copy `AGENTS.md` to that name. Add to the instructions as you learn what your agent needs.
-4. **Read `docs/data_description_sheet.md`** before you ask the agent for any analysis.
-5. **Build in small steps,** as the setup guide describes. Add an entry to `AGENT_LOG.md` each time you work with the agent.
-6. **Fill in every section below** before you submit.
-
-| Path | What it is |
-|---|---|
-| `index.html` | A placeholder page. Replace it with your site. |
-| `data/college_town_home_sales.csv` | The dataset, version 1.0: 35,442 rows. Your site reads this file. |
-| `data/college_town_home_sales.xlsx`, `.sqlite`, `.duckdb`, `.parquet` | The same data in Excel, SQLite, DuckDB and Parquet formats, with identical values |
-| `docs/data_description_sheet.md` | What every column means, and five problems in the data |
-| `AGENTS.md` | Project instructions for your AI coding agent |
-| `AGENT_LOG.md` | Your agent log |
-| `scripts/` | Scripts that make smaller data files for the site |
-| `checks/` | Your separate checks of the site's numbers |
-| `.github/workflows/pages.yml` | Publishes the site to GitHub Pages each time you push to main. It publishes your files as they are, with no build step. |
-
-Don't edit any of the five dataset files. Your site needs only the CSV file. The other formats make it easier to check numbers a second way, for example with a pivot table in Excel or a SQL query on the SQLite file. In SQLite and DuckDB, the table is named `home_sales`.
+# Campus Comps — College Town Home Sales Explorer
 
 ## What this site is for
 
-_Replace this line with your site's question and audience, or a short description of the site._
+Compare completed home sales across US university communities. Students and other interested readers can compare city sale counts and typical transaction prices. The dashboard has state filtering, case-insensitive city search, four sort orders, and an Illinois shortcut. The summary cards, chart and table always use the same selected transactions.
+
+![Dashboard preview](docs/site-preview.jpg)
 
 ## Live site
 
-https://your-username.github.io/your-repo-name/
+https://hhhhyyyyyy21035.github.io/BDI475-Hongyi.He-/
+
+The new dashboard becomes public after the implementation pull request is merged into `main` and the existing Pages workflow succeeds. Keep this same URL in the repository About section. Until then, the public site may still show the template placeholder.
 
 ## Preview it on your own computer
 
-From the repository folder, start a local web server:
+From the repository folder:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then open http://localhost:8000/. Opening `index.html` straight from the file won't load the data.
+Open http://localhost:8000/. Opening `index.html` directly as a file will not load the data.
 
-_If you preview the site another way, describe that way here instead._
+The production website uses plain HTML, CSS and JavaScript. It needs no framework, package installation, server-side code, external chart library, API key or build step. All asset and data paths are relative, including under a GitHub Pages repository path.
 
 ## Data notes
 
-_Replace this line. Say which rows you left out and why, and how each figure on the site is defined. "Five things that will bite you" in the description sheet lists the problems to cover._
+- Source: `data/college_town_home_sales.csv`, version 1.0. All five original data files are unchanged.
+- Eligibility: a finite `sale_price >= 1000`. The data contains **35,442 source records**, **35,438 eligible sales** and **4 excluded records**. No upper price cutoff is applied; sales above $5 million remain included.
+- Records use `listing_id`, which is checked for uniqueness. Repeated street addresses are preserved. ZIP codes, FIPS codes and parcel numbers are never converted to numbers.
+- Each group is a `(city, state)` pair. An eligible-sale count is the number of transactions, not the number of buildings or housing units in the city. The default view contains 18 cities across 11 states.
+- The median is the middle transaction price, or the mean of the two middle prices for an even count. A filtered overall median is recalculated from all underlying eligible prices; city medians are never averaged. Half-dollar city medians are displayed with cents.
+- The website uses neither the unreliable `home_type` column nor incomplete property features. It does not calculate days on market or price per square foot, so missing dates and zero living areas are not converted into misleading zero values or ratios.
+- Collection date (March 2026) is not the sale-date range. Only completed sales are represented. Coverage is not a census of all sales or homes, and values are source-reported, not verified against county records. City comparisons do not adjust for size, age, timing, distance or other property differences.
+
+### Reproduce the browser data
+
+```bash
+python scripts/summarize.py
+```
+
+This reads the CSV and writes `data/city_summary.json` under a new name. The committed JSON is about 252 KB, compared with the 9 MB CSV, and includes city-level source/excluded counts and the eligible price lists needed for exact filtered medians. Commit both the generator and its output if the source changes. This is a preparation command, **not** a Pages build step.
 
 ## How we checked our numbers
 
-_Replace this line. List at least three numbers shown on the site. Check each one with a calculation that is separate from the site's own code, such as a spreadsheet formula, a SQL query or a short script in `checks/`._
+```bash
+python checks/verify_summary.py
+node --check assets/app.js
+```
 
-| Number on the site | Where it appears | How we checked it | Result |
+`checks/verify_summary.py` opens the original SQLite dataset read-only. Independent SQL window queries compute the median from ranked transactions, without using the CSV generator's median function or the website's JavaScript. It checks every city's count, median and entire sorted price list, global counts and the overall median, unique listing IDs, and the source CSV SHA-256 checksum.
+
+| Number on the site | Where it appears | Independent check | Result |
 |---|---|---|---|
-| | | | |
-| | | | |
-| | | | |
+| 35,438 eligible sales | Default summary card | SQL count using `sale_price >= 1000` | Matches |
+| 4 excluded records | Default source-record note and method notes | SQL total minus eligible count | Matches |
+| $410,000 overall median | Default summary card | SQL window ranks and mean of middle prices | Matches |
+| 2,286 sales; $240,000 median | Champaign table row | SQL grouped ranks for Champaign, IL | Matches |
+| 1,131 sales; $229,900 median | Urbana table row | SQL grouped ranks for Urbana, IL | Matches |
+| 92 sales; $876,985.50 median | Pittsboro table row | SQL grouped ranks for Pittsboro, NC | Matches |
+
+Additional browser checks by ChatGPT Codex: initial data loading; Illinois filter (3,664 sales, $245,000 median, 3 cities); case-insensitive Urbana search; no-match state; reset; ascending price and descending sale-count sorting; and a narrow phone-width iframe preview. Review of the public deployed page is still pending until the pull request is merged.
 
 ## Tools we used
 
-_Replace this line with your AI coding agent or agents, and any libraries and other tools you used._
+GitHub Pages, plain HTML/CSS/JavaScript, and Python standard-library CSV and SQLite support. GitHub Copilot was used to read and summarize the supplied project documents. ChatGPT Codex implemented the dashboard and ran the numerical and browser checks. Details and the setup correction are recorded in `AGENT_LOG.md`. User review is pending; the checks above describe agent-performed validation, not independent checks claimed to have been performed by the student.
 
 ## Citation
 
 College-town home sales dataset, version 1.0 (2026). University of Illinois-Deloitte Foundation Center for Business Emerging Technologies. Data collected March 2026.
-
-## Who did what
-
-_For teams: replace this line with each member's name and what they did. If you worked alone, delete this section._

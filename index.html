@@ -1,31 +1,73 @@
 <!DOCTYPE html>
-<!-- A placeholder from the Campus Comps template. Replace this file with your site's first page. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Under construction</title>
-  <!-- An empty icon, so the browser doesn't log an error looking for favicon.ico -->
+  <meta name="description" content="Compare completed home sales across US college towns. Explore city sale counts and median prices, with transparent data rules.">
+  <meta name="theme-color" content="#163b45">
+  <title>Campus Comps · College Town Home Sales Explorer</title>
   <link rel="icon" href="data:,">
-  <style>
-    :root { color-scheme: light dark; }
-    body {
-      max-width: 40rem;
-      margin: 0 auto;
-      padding: 3rem 1rem;
-      font-family: system-ui, sans-serif;
-      line-height: 1.5;
-    }
-    footer { margin-top: 3rem; font-size: 0.875rem; opacity: 0.75; }
-  </style>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/app.js" defer></script>
 </head>
 <body>
-  <main>
-    <h1>This site is under construction</h1>
-    <p>It will show findings from the College-town home sales dataset.</p>
+  <a class="skip-link" href="#overview">Skip to dashboard</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#overview" aria-label="Campus Comps home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 15 16 5l11 10M9 13v14h14V13M14 27v-9h5v9"/></svg></span>
+        <span>Campus Comps<span class="brand-caption">COLLEGE TOWN HOME SALES</span></span>
+      </a>
+      <nav aria-label="Main navigation"><a href="#city-details">City details</a><a href="#methodology">Data &amp; method <span aria-hidden="true">↗</span></a></nav>
+    </div>
+  </header>
+  <main id="overview">
+    <section class="hero page-width" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> THE COLLEGE TOWN COLLECTION</p>
+        <h1 id="hero-title">Small towns.<br><span>Big differences.</span></h1>
+        <p class="hero-description">What does a home cost in a college town? Compare completed sales across university communities, one city at a time.</p>
+      </div>
+      <aside class="collection-note"><span class="note-label">A SNAPSHOT, WITH CONTEXT</span><p>Real sales.<br>Clear comparisons.</p><div class="note-divider"></div><span>Data collected March 2026</span><a href="#methodology">See what the numbers mean <span aria-hidden="true">↓</span></a></aside>
+    </section>
+    <section class="dashboard page-width" aria-labelledby="explore-title">
+      <div class="section-heading"><div><p class="eyebrow">EXPLORE THE DATA</p><h2 id="explore-title">Find your perspective.</h2></div><span class="collection-tag">Completed sales · USD</span></div>
+      <form id="filters" class="filters" aria-label="Filter and sort cities">
+        <div class="field"><label for="state-filter">State</label><select id="state-filter"><option value="">All states</option></select></div>
+        <div class="field search-field"><label for="city-search">City</label><input id="city-search" type="search" placeholder="Search a city…" autocomplete="off"></div>
+        <div class="field"><label for="sort-order">Sort by</label><select id="sort-order"><option value="price-desc">Median price: high to low</option><option value="price-asc">Median price: low to high</option><option value="count-desc">Most sales</option><option value="city-asc">City name</option></select></div>
+        <button type="button" id="reset" class="reset-button">Reset view <span aria-hidden="true">↺</span></button>
+      </form>
+      <p id="load-status" class="view-caption" role="status">Loading the sales data…</p>
+      <div id="load-error" class="error-message" role="alert" hidden><strong>The data could not be loaded.</strong> Check your connection and <button type="button" id="retry">try again</button>. If you are previewing locally, open this page through a web server.</div>
+      <div class="stat-grid" aria-live="polite" aria-atomic="true">
+        <article class="stat-card"><span class="stat-label">Eligible sales</span><strong id="stat-sales">—</strong><span id="stat-source-note" class="stat-note">Completed sales in this view</span></article>
+        <article class="stat-card stat-card-featured"><span class="stat-label">Median sale price</span><strong id="stat-price">—</strong><span class="stat-note">Middle price across the selected sales</span></article>
+        <article class="stat-card"><span class="stat-label">Cities in view</span><strong id="stat-cities">—</strong><span id="stat-states" class="stat-note">Across the selected states</span></article>
+      </div>
+      <div class="comparison-layout">
+        <section class="panel chart-panel" aria-labelledby="chart-title">
+          <div class="panel-heading"><div><h2 id="chart-title">The price of a place.</h2><p>Median sale price by city</p></div><span class="legend"><i aria-hidden="true"></i> City median</span></div>
+          <div id="city-chart" class="city-chart" aria-label="City median sale prices"></div>
+          <p id="empty-state" class="empty-state" hidden>No cities match this view. Try another search or reset the filters.</p>
+          <p class="chart-note">Each bar starts at zero. Sales counts and exact prices appear in the table below.</p>
+        </section>
+        <aside class="sidebar">
+          <section class="local-card"><p class="eyebrow">CLOSER TO HOME</p><h2>A look at<br>Illinois.</h2><p>Explore Champaign, Urbana and Savoy, the communities around the University of Illinois.</p><button id="illinois-focus" type="button">Explore Illinois <span aria-hidden="true">↗</span></button><div class="house-line" aria-hidden="true"><svg viewBox="0 0 240 92"><path d="M3 85h234M19 85V44l30-25 30 25v41M30 85V52h14v33m11-33h13v15H55zm-24-15h13M91 85V25l30-20 31 20v60M102 85V43h14v42m13-42h12v14h-12zm-23-17h25M165 85V48l27-23 29 23v37m-44 0V57h12v28m14-28h10v13h-10z"/></svg></div></section>
+          <section class="reading-card"><span class="note-label">A LITTLE CONTEXT</span><h3>Why the median?</h3><p>The middle sale price gives a useful sense of a typical transaction, with less influence from very expensive sales than an average.</p><p>These are observed sales, not a valuation of every home or a measure of today's listings.</p><a href="#methodology">Read the data notes <span aria-hidden="true">↗</span></a></section>
+        </aside>
+      </div>
+      <section id="city-details" class="panel table-panel" aria-labelledby="table-title">
+        <div class="panel-heading"><div><p class="eyebrow">BEHIND THE BARS</p><h2 id="table-title">Every city, in detail.</h2></div><span id="table-count" class="muted"></span></div>
+        <div class="table-scroll"><table><caption class="sr-only">City-level completed sales after the stated price filter. The table follows the filters and sort order above.</caption><thead><tr><th scope="col">City</th><th scope="col">State</th><th scope="col" class="number-cell">Eligible sales</th><th scope="col" class="number-cell">Median sale price</th><th scope="col" class="number-cell">Excluded sales</th></tr></thead><tbody id="city-table"></tbody></table></div>
+      </section>
+    </section>
+    <section id="methodology" class="methodology page-width" aria-labelledby="method-title">
+      <div class="method-intro"><p class="eyebrow">TRANSPARENT BY DESIGN</p><h2 id="method-title">Know what<br>you're comparing.</h2><p>A useful comparison starts with a consistent definition. Here's ours.</p><a href="docs/data_description_sheet.md">Full data description <span aria-hidden="true">↗</span></a></div>
+      <div class="method-grid"><article><h3>One price rule</h3><p id="price-rule">Only finite sale prices of at least $1,000 are included. The same rule applies to every summary, bar and table row.</p><p id="dataset-count-note">Source and excluded-record counts are calculated from the dataset.</p></article><article><h3>One sale, one record</h3><p>Records are identified by <code>listing_id</code>. Repeated street addresses are kept: they may represent separate apartments or repeat sales. Cities are grouped with their state.</p></article><article><h3>A median of sales</h3><p>For each view, the middle price is calculated from all eligible transactions. For an even count, the two middle prices are averaged. City medians are never averaged to create the overall figure.</p></article><article><h3>Limits of this snapshot</h3><p>Prices above $5 million remain included. Home type is unreliable; this page does not use it. It also does not use incomplete dates or zero floor areas to calculate market duration or price per square foot. Values are source-reported and not verified against county records.</p></article></div>
+    </section>
   </main>
-  <footer>
-    <p>Data: College-town home sales dataset, version 1.0 (2026). University of Illinois-Deloitte Foundation Center for Business Emerging Technologies. Data collected March 2026.</p>
-  </footer>
+  <footer class="page-width"><span class="footer-brand">Campus Comps</span><p>College-town home sales dataset, version 1.0 (2026). University of Illinois-Deloitte Foundation Center for Business Emerging Technologies. Data collected March 2026. Collection date is not the sale date range.</p><a href="https://github.com/hhhhyyyyyy21035/BDI475-Hongyi.He-">View source on GitHub <span aria-hidden="true">↗</span></a></footer>
+  <noscript><p class="page-width">Enable JavaScript to load the interactive sales dashboard. The original data is available in the repository's data folder.</p></noscript>
 </body>
 </html>
