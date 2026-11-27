@@ -1,68 +1,45 @@
-# Campus Comps — College Town Home Sales Explorer
+# Campus Comps
 
-## What this site is for
+Campus Comps explores 35,442 completed home sales in 18 cities around 11 university campuses. Compare prices, days on market, annual property taxes and distance to campus. The site includes ten market questions, a filterable city map, and a comparison of two places.
 
-Compare completed home sales across US university communities. Q1 ranks all 18 cities by median sale price. The city explorer has state filtering, case-insensitive city search, four sort orders, and an Illinois shortcut. Its summary cards, chart and table use the same selected transactions. Q1 always uses the full city coverage and the stated price range.
+[Open the live site](https://hhhhyyyyyy21035.github.io/BDI475-Hongyi.He-/)
 
-## Live site
+## Explore the project
 
-https://hhhhyyyyyy21035.github.io/BDI475-Hongyi.He-/
+- **Explore sales** links filters, map selections, summary numbers and a sortable city table. Use the page address to share a selection.
+- **Market questions** displays the six dataset-wide results and recalculates Q7–Q10 from each question's controls.
+- **Insights** measures the effect of missing sale-history dates and describes the coding-agent workflow.
+- **Data & methods** explains the price window, missing values, location definitions and source.
 
-GitHub Pages serves the latest successful deployment from `main`. To check a change on another branch, preview it locally.
+## Run locally
 
-## Preview it on your own computer
+From the repository root, start a static file server:
 
-From the repository folder:
-
-```bash
+```sh
 python -m http.server 8000
 ```
 
-Open http://localhost:8000/. Opening `index.html` directly as a file will not load the data.
-
-The production website uses plain HTML, CSS and JavaScript. It needs no framework, package installation, server-side code, external chart library, API key or build step. All asset and data paths are relative, including under a GitHub Pages repository path.
-
-## Data notes
-
-- Source: `data/college_town_home_sales.csv`, version 1.0. All five original data files are unchanged.
-- Price scope for Q1 and the city explorer: a finite sale price from $10,000 to $5,000,000, inclusive. The data contains **35,442 source records**, **35,371 eligible sales** and **71 excluded records**.
-- Records use `listing_id`, which is checked for uniqueness. Repeated street addresses are preserved. ZIP codes, FIPS codes and parcel numbers are never converted to numbers.
-- Each group is a `(city, state)` pair. An eligible-sale count is the number of transactions, not the number of buildings or housing units in the city. The default view contains 18 cities across 11 states.
-- The median is the middle transaction price, or the mean of the two middle prices for an even count. A filtered overall median is recalculated from all underlying eligible prices; city medians are never averaged. Half-dollar city medians are displayed with cents.
-- The website uses neither the unreliable `home_type` column nor incomplete property features. It does not calculate days on market or price per square foot, so missing dates and zero living areas are not converted into misleading zero values or ratios.
-- Collection date (March 2026) is not the sale-date range. Only completed sales are represented. Coverage is not a census of all sales or homes, and values are source-reported, not verified against county records. City comparisons do not adjust for size, age, timing, distance or other property differences.
-
-### Reproduce the browser data
-
-```bash
-python scripts/summarize.py
-```
-
-This reads the CSV and writes `data/city_summary.json` under a new name. The committed JSON is about 252 KB, compared with the 9 MB CSV, and includes city-level source/excluded counts and the eligible price lists needed for exact filtered medians. Commit both the generator and its output if the source changes. This is a preparation command, **not** a Pages build step.
+Open [localhost:8000](http://localhost:8000). The site reads the original CSV in the browser and uses plain HTML, CSS and JavaScript. GitHub Pages publishes the repository through the existing workflow.
 
 ## How we checked our numbers
 
-```bash
-python checks/verify_summary.py
-node --check assets/app.js
+```sh
+python checks/verify_final.py
 ```
 
-`checks/verify_summary.py` opens the original SQLite dataset read-only. Independent SQL window queries compute the median from ranked transactions, without using the CSV generator's median function or the website's JavaScript. It checks every city's count, median and entire sorted price list, global counts and the overall median, unique listing IDs, and the source CSV SHA-256 checksum.
+The script calculates expected results from the original SQLite file with separate SQL and Python, then compares them with the browser's analysis module running on the CSV. It checks every city or campus result for Q1–Q6 and several input settings per dynamic question, including exact price boundaries and no-match cases.
 
-| Number on the site | Where it appears | Independent check | Result |
-|---|---|---|---|
-| 35,371 eligible sales | Q1 scope note and default summary card | SQL count using `sale_price BETWEEN 10000 AND 5000000` | Matches |
-| 71 excluded records | Default source-record note and method notes | SQL total minus eligible count | Matches |
-| $410,000 overall median | Default summary card | SQL window ranks and mean of middle prices | Matches |
-| $889,000 median, highest of 18 cities | Davis, CA in Q1 | SQL grouped ranks for every city and comparison of medians | Matches |
-| 2,285 sales, $240,000 median | Champaign table row | SQL grouped ranks for Champaign, IL | Matches |
-| 1,131 sales, $229,900 median | Urbana table row | SQL grouped ranks for Urbana, IL | Matches |
-| 92 sales, $876,985.50 median | Pittsboro table row | SQL grouped ranks for Pittsboro, NC | Matches |
+| Result | Independent check |
+| --- | --- |
+| 35,442 source records and 35,371 sales in scope | SQLite row count and inclusive price predicate |
+| Davis, CA leads Q1 at $889,000 | City-by-city medians of eligible sale prices |
+| Athens, GA leads Q2 with a 32.8% gap | City mean and median on all reported prices |
+| 28,028 scoped sales have both market-time dates | Count of non-null listing and contract dates |
 
-## Tools we used
+The earlier Q1 summary generator and its check are retained as a separate workflow. Run `python scripts/summarize.py` followed by `python checks/verify_summary.py` to reproduce and verify that summary.
 
-GitHub Pages, plain HTML/CSS/JavaScript, and Python standard-library CSV and SQLite support. GitHub Copilot summarized the supplied documents during Part 1. ChatGPT Codex implemented the dashboard and Q1 and ran the data checks. The project history is recorded in `AGENT_LOG.md`.
+## Tools and source
 
-## Citation
+ChatGPT Codex implemented the analysis, interactive site and independent checks. The [agent log](AGENT_LOG.md) records the project history.
 
-College-town home sales dataset, version 1.0 (2026). University of Illinois-Deloitte Foundation Center for Business Emerging Technologies. Data collected March 2026.
+College-town home sales dataset, version 1.0 (2026). University of Illinois–Deloitte Foundation Center for Business Emerging Technologies. Data collected March 2026. [Data description](docs/data_description_sheet.md)

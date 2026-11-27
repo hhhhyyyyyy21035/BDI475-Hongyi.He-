@@ -29,3 +29,10 @@ Then propose a simple dashboard comparing home sales across cities.
 - **User request:** “我现在要开始做” after reviewing the Canvas final project requirements.
 - **First change:** ChatGPT Codex added a fixed Q1 answer and chart, and updated the city explorer to the final project's inclusive $10,000–$5,000,000 scope. The script regenerated the browser summary from the source CSV.
 - **Independent check:** SQL on the original SQLite file matched the count and median for every city. The new scope retains 35,371 of 35,442 sales, and Davis, CA has the highest city median at $889,000. Chapel Hill's median moves from $735,000 under the Part 1 rule to $734,000 under the final rule.
+
+## 2026-11-27: Complete the Part 2 implementation
+
+- Implemented all ten market questions against the original CSV. The price window applies to the scoped questions, and Q2, Q3 and Q9 use all rows where specified.
+- Built a linked map and filterable explorer, shareable URL state, side-by-side comparison, sortable results, theme switching and data methods.
+- Verified the analysis separately against the original SQLite file. The independent checks include settings with zero results and sales exactly on the price limits.
+- The Insights section uses measured source-data differences and the actual Part 1 to Part 2 workflow for its examples.
