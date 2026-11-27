@@ -10,7 +10,8 @@ from statistics import median
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "data/college_town_home_sales.csv"
 OUTPUT = ROOT / "data/city_summary.json"
-PRICE_FLOOR = 1000
+PRICE_FLOOR = 10_000
+PRICE_CEILING = 5_000_000
 
 
 def main():
@@ -29,7 +30,7 @@ def main():
                 price = float(row["sale_price"])
             except (ValueError, TypeError):
                 continue
-            if math.isfinite(price) and price >= PRICE_FLOOR:
+            if math.isfinite(price) and PRICE_FLOOR <= price <= PRICE_CEILING:
                 group["prices"].append(int(price) if price.is_integer() else price)
     cities = []
     for (city, state), group in sorted(groups.items()):
@@ -43,7 +44,7 @@ def main():
     result = {
         "source": "data/college_town_home_sales.csv", "collection": "March 2026",
         "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-        "price_floor": PRICE_FLOOR, "source_count": len(seen),
+        "price_floor": PRICE_FLOOR, "price_ceiling": PRICE_CEILING, "source_count": len(seen),
         "eligible_count": len(all_prices), "excluded_count": len(seen) - len(all_prices),
         "median": median(all_prices) if all_prices else None, "cities": cities,
     }
