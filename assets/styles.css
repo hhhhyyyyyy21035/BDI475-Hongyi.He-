@@ -22,6 +22,7 @@
   --accent: #a6472d;
   --teal: #28666c;
   --track: #e6ebe6;
+  --chart-alt: #849685;
   --focus: #aa4c32;
   background: var(--paper);
   color: var(--ink);
@@ -37,6 +38,7 @@
   --accent: #f29d77;
   --teal: #91d1c8;
   --track: #28443e;
+  --chart-alt: #c1bc9b;
   --focus: #ffbe91;
 }
 * { box-sizing: border-box; }
@@ -79,6 +81,7 @@ svg, canvas { max-width: 100%; }
 .site-nav a:hover { text-decoration: underline; }
 .hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 1fr); align-items: center; gap: 2.5rem; padding-block: 3rem; }
 .hero h1 { max-width: 19ch; font-family: "DM Serif Display", Georgia, serif; font-weight: 400; font-size: clamp(2.5rem, 6vw, 5rem); letter-spacing: -.035em; }
+.hero h1 span { display: block; }
 .hero p { max-width: 46ch; color: var(--muted); font-size: 1.06rem; }
 .primary-link {
   display: inline-flex;
@@ -139,4 +142,11 @@ svg, canvas { max-width: 100%; }
   .insight-table tbody th { background: var(--track); }
   .insight-table td { display: flex; justify-content: space-between; gap: .5rem; }
   .insight-table td::before { content: attr(data-label); color: var(--muted); }
+}
+@media (max-width: 480px) {
+  .question-nav a { min-height: 2.6rem; display: inline-flex; align-items: center; }
+  .overview div { align-content: start; display: grid; }
+  .overview dd { grid-row: 1; }
+  .insight-table td { align-items: baseline; }
+  .insight-table td::before { max-width: 65%; }
 }

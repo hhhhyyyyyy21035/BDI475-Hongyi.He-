@@ -428,6 +428,15 @@
   border-color: var(--teal, #2b6770);
 }
 
+@media (min-width: 360px) and (max-width: 560px) {
+  #q8 .question-field { flex-basis: 8rem; }
+}
+
+@media (max-width: 560px) {
+  .question-field input,
+  .question-field select { min-height: 2.75rem; }
+}
+
 .question-field input:focus-visible,
 .question-field select:focus-visible,
 .question-table-details summary:focus-visible {
