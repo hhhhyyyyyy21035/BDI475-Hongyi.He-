@@ -23,3 +23,9 @@ Then propose a simple dashboard comparing home sales across cities.
 - **Checks performed by the agent:** Original CSV: 35,442 distinct listing IDs, 35,438 eligible sales, 4 excluded records, $410,000 overall median. SQL on the separate SQLite file matched all 18 city counts, medians and complete sorted price lists. Browser checks exercised state filtering, case-insensitive search, an empty result, reset and sorting, plus the narrow-width layout. The Illinois view matched a separate SQL result: 3,664 eligible sales, 3 cities and a $245,000 median. JavaScript syntax was checked with Node.
 - **Data safeguards:** No address deduplication; no upper price cutoff; no use of unreliable home types; no zero-imputation for missing dates or floor area; no average of city medians. The source files and existing deployment workflow remain unchanged.
 - **Student review:** Pending. The log does not claim that the student independently performed the agent's checks or that the new dashboard has already been deployed publicly.
+
+## 2026-11-27: Start Website Project Part 2
+
+- **User request:** “我现在要开始做” after reviewing the Canvas final project requirements.
+- **First change:** ChatGPT Codex added a fixed Q1 answer and chart, and updated the city explorer to the final project's inclusive $10,000–$5,000,000 scope. The script regenerated the browser summary from the source CSV.
+- **Independent check:** SQL on the original SQLite file matched the count and median for every city. The new scope retains 35,371 of 35,442 sales, and Davis, CA has the highest city median at $889,000. Chapel Hill's median moves from $735,000 under the Part 1 rule to $734,000 under the final rule.

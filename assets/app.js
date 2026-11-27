@@ -22,6 +22,43 @@ function make(tag, className, text) {
   return element;
 }
 
+function priceScope(data) {
+  return `${money(data.price_floor)}–${money(data.price_ceiling)}`;
+}
+
+function priceBar(city, maxPrice, emphasis) {
+  const row = make('div', `chart-row ${emphasis}`);
+  const label = make('div', 'chart-label', city.city);
+  label.append(make('span', '', ` ${city.state}`));
+  const track = make('div', 'bar-track');
+  track.setAttribute('aria-hidden', 'true');
+  if (city.median !== null && maxPrice > 0) {
+    const bar = make('div', 'bar-fill');
+    bar.style.width = `${city.median / maxPrice * 100}%`;
+    track.append(bar);
+  }
+  row.append(label, track, make('div', 'chart-value', money(city.median)));
+  row.title = `${city.city}, ${city.state} · ${money(city.median)} median · ${number.format(city.count)} eligible sales`;
+  return row;
+}
+
+function renderQ1(data) {
+  const cities = [...data.cities].sort((a, b) => (b.median ?? -Infinity) - (a.median ?? -Infinity)
+    || a.city.localeCompare(b.city) || a.state.localeCompare(b.state));
+  const topPrice = cities[0].median;
+  if (topPrice === null) {
+    $('q1-answer').textContent = 'No sales fall within the price scope.';
+    return;
+  }
+  const leaders = cities.filter(city => city.median === topPrice);
+  const cityNames = new Intl.ListFormat('en-US').format(leaders.map(city => `${city.city}, ${city.state}`));
+  $('q1-answer').textContent = `The highest median sale price is ${money(topPrice)} in ${cityNames}.`;
+  $('q1-chart').replaceChildren(...cities.map(city => priceBar(city, topPrice,
+    city.median === topPrice ? 'top-price-row' : '')));
+  $('q1-scope').textContent = `${number.format(data.eligible_count)} eligible sales · ${priceScope(data)} inclusive · Bars start at $0`;
+  $('q1-figure').hidden = false;
+}
+
 function render() {
   if (!dataset) return;
   const state = $('state-filter').value;
@@ -43,7 +80,7 @@ function render() {
   $('stat-cities').textContent = number.format(cities.length);
   $('stat-states').textContent = `Across ${number.format(states.size)} ${states.size===1?'state':'states'}`;
   $('stat-source-note').textContent = `${number.format(rawCount)} source records · ${number.format(excluded)} excluded`;
-  $('load-status').textContent = `${state ? stateNames[state] || state : 'All states'} · ${number.format(cities.length)} ${cities.length===1?'city':'cities'} in view · Sale price ≥ ${money(dataset.price_floor)}`;
+  $('load-status').textContent = `${state ? stateNames[state] || state : 'All states'} · ${number.format(cities.length)} ${cities.length===1?'city':'cities'} in view · Sale price ${priceScope(dataset)}`;
   $('table-count').textContent = `${number.format(cities.length)} ${cities.length===1?'city':'cities'}`;
   $('empty-state').hidden = cities.length > 0;
   $('illinois-focus').setAttribute('aria-pressed', String(state === 'IL' && !query));
@@ -53,17 +90,7 @@ function render() {
   const table = document.createDocumentFragment();
   const maxPrice = Math.max(0,...cities.map(item => item.median ?? 0));
   for (const city of cities) {
-    const row = make('div',`chart-row${city.state==='IL'?' local-row':''}`);
-    const label = make('div','chart-label',city.city);
-    label.append(make('span','',city.state));
-    const track = make('div','bar-track');
-    const bar = make('div','bar-fill');
-    bar.style.width = `${maxPrice && city.median !== null ? city.median/maxPrice*100 : 0}%`;
-    track.append(bar);
-    track.setAttribute('aria-hidden','true');
-    row.append(label,track,make('div','chart-value',money(city.median)));
-    row.title = `${city.city}, ${city.state}: ${money(city.median)} median; ${number.format(city.count)} eligible sales`;
-    chart.append(row);
+    chart.append(priceBar(city, maxPrice, city.state === 'IL' ? 'local-row' : ''));
     const tr = make('tr');
     const cityCell = make('td','',city.city);
     if (city.state === 'IL') cityCell.append(make('span','illinois-badge','Illinois'));
@@ -81,11 +108,15 @@ function render() {
 async function load() {
   $('load-error').hidden = true;
   $('load-status').textContent = 'Loading the sales data…';
+  $('q1-answer').textContent = 'Loading the sales data…';
+  $('q1-figure').hidden = true;
   try {
     const response = await fetch('data/city_summary.json');
     if (!response.ok) throw new Error(`Data request failed (${response.status})`);
     const data = await response.json();
-    if (!Array.isArray(data.cities) || !data.cities.length || !Number.isFinite(data.price_floor)) throw new Error('Invalid summary structure');
+    if (!Array.isArray(data.cities) || !data.cities.length
+        || !Number.isFinite(data.price_floor) || !Number.isFinite(data.price_ceiling)
+        || data.price_floor > data.price_ceiling) throw new Error('Invalid summary structure');
     dataset = data;
     const selected = $('state-filter').value;
     $('state-filter').replaceChildren(make('option','','All states'));
@@ -96,11 +127,14 @@ async function load() {
       $('state-filter').append(option);
     });
     $('state-filter').value = selected;
-    $('price-rule').textContent = `Only finite sale prices of at least ${money(data.price_floor)} are included. The same rule applies to every summary, bar and table row.`;
-    $('dataset-count-note').textContent = `Full dataset: ${number.format(data.source_count)} source records; ${number.format(data.eligible_count)} eligible; ${number.format(data.excluded_count)} excluded. No upper price cutoff is applied.`;
+    $('price-rule').textContent = `Q1 and the city explorer include sale prices in ${priceScope(data)}, including both endpoints.`;
+    $('dataset-count-note').textContent = `Of ${number.format(data.source_count)} source records, ${number.format(data.eligible_count)} meet this price scope and ${number.format(data.excluded_count)} fall outside it.`;
+    renderQ1(data);
     render();
   } catch (error) {
     $('load-status').textContent = 'Sales data unavailable.';
+    $('q1-answer').textContent = 'Sales data unavailable. Use the retry button in the city explorer.';
+    $('q1-figure').hidden = true;
     $('load-error').hidden = false;
     console.error('Dashboard data loading error:',error);
   }

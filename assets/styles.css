@@ -12,3 +12,70 @@
 .chart-note{font-size:11px}.legend{font-size:10px}th{font-size:10px}td{font-size:12px}.method-grid p{font-size:12px}.reading-card p{font-size:12px}
 @media(max-width:760px){.stat-label{font-size:10px}.stat-note{font-size:9px}.view-caption{font-size:10px}.chart-row{font-size:11px}.legend{font-size:9px}}
 @media(max-width:420px){.chart-label{font-size:10px}.chart-value{font-size:10px}.chart-label span{font-size:8px}.legend{display:none}}
+
+.question {
+  border-top: 1px solid var(--line);
+  padding: 32px 0 40px;
+}
+
+.question-answer {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.question-chart {
+  margin: 0;
+}
+
+.question-chart figcaption {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.question-chart .chart-row {
+  grid-template-columns: 155px minmax(0, 1fr) 82px;
+}
+
+.question-axis {
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 7px;
+}
+
+.question-chart .bar-fill {
+  background: #9bacaa;
+}
+
+.question-chart .top-price-row .bar-fill {
+  background: var(--orange);
+}
+
+.question-chart .top-price-row .chart-value,
+.question-chart .top-price-row .chart-label {
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .question-chart .chart-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 8px;
+  }
+
+  .question-chart .bar-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    height: 10px;
+  }
+
+  .question-chart .chart-label span {
+    display: inline;
+    margin: 0 0 0 3px;
+  }
+
+  .question-axis span:last-child {
+    display: none;
+  }
+}

@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     data = json.loads((ROOT / "data/city_summary.json").read_text())
+    assert (data["price_floor"], data["price_ceiling"]) == (10_000, 5_000_000)
     db = sqlite3.connect(f"file:{ROOT / 'data/college_town_home_sales.sqlite'}?mode=ro", uri=True)
     source_count, distinct_ids = db.execute(
         "SELECT COUNT(*), COUNT(DISTINCT listing_id) FROM home_sales"
@@ -18,7 +19,7 @@ def main():
         WITH ranked AS (
             SELECT sale_price, ROW_NUMBER() OVER (ORDER BY sale_price) AS rn,
                    COUNT(*) OVER () AS n
-            FROM home_sales WHERE sale_price >= 1000
+            FROM home_sales WHERE sale_price BETWEEN 10000 AND 5000000
         )
         SELECT MAX(n), AVG(sale_price) FROM ranked
         WHERE rn IN ((n + 1) / 2, (n + 2) / 2)
@@ -31,7 +32,7 @@ def main():
             SELECT city, state, sale_price,
                    ROW_NUMBER() OVER (PARTITION BY city, state ORDER BY sale_price) AS rn,
                    COUNT(*) OVER (PARTITION BY city, state) AS n
-            FROM home_sales WHERE sale_price >= 1000
+            FROM home_sales WHERE sale_price BETWEEN 10000 AND 5000000
         )
         SELECT city, state, MAX(n), AVG(sale_price) FROM ranked
         WHERE rn IN ((n + 1) / 2, (n + 2) / 2)
@@ -42,7 +43,9 @@ def main():
         actual = next(item for item in data["cities"] if (item["city"], item["state"]) == (city, state))
         assert (actual["count"], actual["median"]) == (count, midpoint), (city, state)
         expected_prices = [r[0] for r in db.execute(
-            "SELECT sale_price FROM home_sales WHERE city=? AND state=? AND sale_price>=1000 ORDER BY sale_price",
+            """SELECT sale_price FROM home_sales
+               WHERE city=? AND state=? AND sale_price BETWEEN 10000 AND 5000000
+               ORDER BY sale_price""",
             (city, state),
         )]
         assert actual["prices"] == expected_prices, (city, state, "prices")
